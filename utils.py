@@ -149,7 +149,7 @@ def get_batches(queries, answers, batch_size):
     all_bat.append((q_pad, q_len, a_pad, a_len))
   return all_bat
 
-def pad_for_seq2seq(encoder_bat, decoder_bat):
+def pad_for_seq2seq(encoder_bat, decoder_bat, batch_size):
   encoder_lens = [len(s) for s in encoder_bat]
   decoder_lens = [len(s) for s in decoder_bat]
   encoder_max_len = max(encoder_lens)
@@ -157,13 +157,22 @@ def pad_for_seq2seq(encoder_bat, decoder_bat):
   encoder_pad, decoder_pad = [], []
 
   for enc_line in encoder_bat:
-    enc_line += [0] * (max_len - len(enc_line))
-    enc_line = list(reversed(enc_line))
-    enc_pad = encoder_pad.append(enc_line)
+    enc_line += [0] * (encoder_max_len - len(enc_line))
+    encoder_pad.append(list(reversed(enc_line)))
 
   for dec_line in decoder_bat:
-    
+    decoder_pad.append([1] + dec_line + [0] * (decoder_max_len - len(dec_line) - 1))
 
+  batch_encoder, batch_decoder, target_weight = [], [], []
+  for length_idx in range(encoder_max_len):
+    batch_encoder.append(np.array([encoder_pad[batch_idx][length_idx]
+                                  for batch_idx in range(batch_size)], dtype=np.int32))
+
+  for length_idx in range(decoder_max_len + 1):
+    batch_decoder.append(np.array([decoder_pad[batch_idx][length_idx]
+                                  for batch_idx in range(batch_size)], dtype=np.int32))
+
+  return batch_encoder, batch_decoder
 
 def get_batches_for_seq2seq(encoder_input, decoder_input, batch_size):
   minibatches = get_batchidx(len(encoder_input), batch_size)
@@ -171,6 +180,9 @@ def get_batches_for_seq2seq(encoder_input, decoder_input, batch_size):
   for minibatch in minibatches:
     encoder_bat = [encoder_input[t] for t in minibatch]
     decoder_bat = [decoder_input[t] for t in minibatch]
+    batch_encoder, batch_decoder = pad_for_seq2seq(
+                          encoder_bat, decoder_bat, batch_size)
+  return batch_encoder, batch_decoder
 
 def print_time(s, start_time):
   """Take a start time, print elapsed duration, and return a new time."""
