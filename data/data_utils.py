@@ -43,22 +43,29 @@ def get_dataset(convs, id2line):
 
   return src_utterance, tgr_utterance
 
-def save_dataset(src_utterance, tgr_utterance, save_dir="", test_size=1000):
-
+def save_dataset(src_utterance, tgr_utterance, save_dir="", eval_size=1000, test_size=1000):
   #save files
   train_file = open(os.path.join(save_dir, "train.txt"), 'w')
+  eval_file = open(os.path.join(eval_dir, "eval.txt"), 'w')
   test_file = open(os.path.join(save_dir, "text.txt"), 'w')
 
-  test_id = random.sample(list(range(len(src_utterance))), test_size)
+  eval_test_id = random.sample(list(range(len(src_utterance))), eval_size + test_size)
+  eval_id = random.sample(eval_test_id, eval_size)
+  test_id = [i for i in eval_test_id if i not in eval_id]
+
   for i in range(len(src_utterance)):
     if i in test_id:
       test_file.write(src_utterance[i] + '\n')
       test_file.write(tgr_utterance[i] + '\n')
-    else:
+    elif i in eval_id:
+      eval_file.write(src_utterance[i], + '\n')
+      eval_file.write(tgr_utterance[i], + '\n')
+    else
       train_file.write(src_utterance[i] + '\n')
       train_file.write(tgr_utterance[i] + '\n')
 
   train_file.close()
+  eval_file.close()
   test_file.close()
 
 def main():
