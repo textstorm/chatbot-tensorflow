@@ -30,7 +30,7 @@ def get_id2line(line_dir=None):
 
 def get_dataset(convs, id2line):
   src_utterance = []
-  tgr_utterance = []
+  tgt_utterance = []
 
   for conv in convs:
     if len(conv) % 2 != 0:
@@ -39,15 +39,15 @@ def get_dataset(convs, id2line):
       if idx % 2 == 0:
         src_utterance.append(id2line[line_id])
       else:
-        tgr_utterance.append(id2line[line_id])
+        tgt_utterance.append(id2line[line_id])
 
-  return src_utterance, tgr_utterance
+  return src_utterance, tgt_utterance
 
-def save_dataset(src_utterance, tgr_utterance, save_dir="", eval_size=1000, test_size=1000):
+def save_dataset(src_utterance, tgt_utterance, save_dir="", eval_size=500, test_size=500):
   #save files
   train_file = open(os.path.join(save_dir, "train.txt"), 'w')
-  eval_file = open(os.path.join(eval_dir, "eval.txt"), 'w')
-  test_file = open(os.path.join(save_dir, "text.txt"), 'w')
+  eval_file = open(os.path.join(save_dir, "eval.txt"), 'w')
+  test_file = open(os.path.join(save_dir, "test.txt"), 'w')
 
   eval_test_id = random.sample(list(range(len(src_utterance))), eval_size + test_size)
   eval_id = random.sample(eval_test_id, eval_size)
@@ -56,13 +56,13 @@ def save_dataset(src_utterance, tgr_utterance, save_dir="", eval_size=1000, test
   for i in range(len(src_utterance)):
     if i in test_id:
       test_file.write(src_utterance[i] + '\n')
-      test_file.write(tgr_utterance[i] + '\n')
+      test_file.write(tgt_utterance[i] + '\n')
     elif i in eval_id:
-      eval_file.write(src_utterance[i], + '\n')
-      eval_file.write(tgr_utterance[i], + '\n')
-    else
+      eval_file.write(src_utterance[i] + '\n')
+      eval_file.write(tgt_utterance[i] + '\n')
+    else:
       train_file.write(src_utterance[i] + '\n')
-      train_file.write(tgr_utterance[i] + '\n')
+      train_file.write(tgt_utterance[i] + '\n')
 
   train_file.close()
   eval_file.close()
@@ -71,8 +71,8 @@ def save_dataset(src_utterance, tgr_utterance, save_dir="", eval_size=1000, test
 def main():
   convs = get_convs()
   id2line = get_id2line()
-  src_utterance, tgr_utterance = get_dataset(convs, id2line)
-  save_dataset(src_utterance, tgr_utterance)
+  src_utterance, tgt_utterance = get_dataset(convs, id2line)
+  save_dataset(src_utterance, tgt_utterance)
 
 if __name__ == '__main__':
   main()
